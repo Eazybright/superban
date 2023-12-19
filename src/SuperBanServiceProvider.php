@@ -1,12 +1,12 @@
 <?php
 
-namespace VendorName\Skeleton;
+namespace Eazybright\SuperBan;
 
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
-use VendorName\Skeleton\Commands\SkeletonCommand;
+// use Eazybright\SuperBan\Superban\Commands\SuperbanCommand;
 
-class SkeletonServiceProvider extends PackageServiceProvider
+class SuperBanServiceProvider extends PackageServiceProvider
 {
     public function configurePackage(Package $package): void
     {
@@ -16,10 +16,10 @@ class SkeletonServiceProvider extends PackageServiceProvider
          * More info: https://github.com/spatie/laravel-package-tools
          */
         $package
-            ->name('skeleton')
-            ->hasConfigFile()
-            ->hasViews()
-            ->hasMigration('create_skeleton_table')
-            ->hasCommand(SkeletonCommand::class);
+            ->name('superban')
+            ->hasConfigFile();
+            // ->hasViews()
+            // ->hasMigration('create_superban_table');
+            // ->hasCommand(SuperbanCommand::class);
     }
 }
