@@ -5,7 +5,7 @@ namespace Eazybright\SuperBan;
 use Illuminate\Cache\RateLimiter;
 use Illuminate\Http\Request;
 
-class Superban
+class SuperBan
 {
     protected $rateLimiter;
 
@@ -22,78 +22,79 @@ class Superban
         $rateLimitBy = config('superban.rate_limit_by', 'ip');
 
         return match($rateLimitBy){
-            'ip' => $this->banByIp($request),
-            'user' => $this->banByUserId($request),
-            'email' => $this->banByEmail($request),
+            'ip' => $this->setKeyByIp($request),
+            'user' => $this->setKeyByUserId($request),
+            'email' => $this->setKeyByEmail($request),
             default => throw new \InvalidArgumentException('Invalid rate_limit_by configuration.')
         };
-    }
+    } 
 
     /**
-     * 
+     * Determine if the given key has been "accessed" too many times.
      */
-    public function setKey()
-    {
-        
-    }
-
-    public function attempts(Request $request)
-    {
-        return $this->rateLimiter->attempts($this->getKey($request));
-    }
-
-    public function tooManyAttempts(Request $request, $maxAttempts, $decayMinutes)
+    public function tooManyAttempts(string $key, $maxAttempts): int
     {
         return $this->rateLimiter->tooManyAttempts(
-            $this->getKey($request),
-            $maxAttempts,
-            $decayMinutes
-        );
-    }
-
-    public function hit(Request $request, $decayMinutes = 1)
-    {
-        return $this->rateLimiter->hit(
-            $this->getKey($request),
-            $decayMinutes
-        );
-    }
-
-    public function remainingAttempts(Request $request, $maxAttempts): int
-    {
-        return $this->rateLimiter->remaining(
-            $this->getKey($request),
+            $key,
             $maxAttempts
         );
     }
 
-    public function resetTime(Request $request)
+     /**
+     * Increment the counter for a given key for a given decay time.
+     */
+    public function hit(string $key, int $decayMinutes = 1): int
     {
-        return $this->rateLimiter->availableIn($this->getKey($request));
+        return $this->rateLimiter->hit(
+            $key,
+            $decayMinutes * 60
+        );
     }
 
-    protected function banByIp(Request $request): string
+    /**
+     * Get the number of seconds until the "key" is accessible again.
+     *
+     * @param  string  $key
+     * @return int
+     */
+    public function availableIn(string $key): int
+    {
+        return $this->rateLimiter->availableIn($key);
+    }
+
+     /**
+     * Get the number of retries left for the given key.
+     */
+    public function remainingAttempts(string $key, int $maxAttempts): int
+    {
+        return $this->rateLimiter->remaining(
+            $key,
+            $maxAttempts
+        );
+    }
+
+    protected function setKeyByIp(Request $request): string
     {
         return 'superban:' . $request->ip();
     }
 
-    protected function banByUserId(Request $request): string
+    protected function setKeyByUserId(Request $request): string
     {
         $user = $request->user();
 
         if (!$user) {
-            return $this->banByIp($request);
+            return $this->setKeyByIp($request);
         }
 
         return 'superban:user:' . $user->id;
     }
 
-    protected function banByEmail(Request $request): string
+    protected function setKeyByEmail(Request $request): string
     {
         $user = $request->user();
 
         if (!$user) {
-            return $this->banByIp($request);   
+            return $this->setKeyByIp($request);   
         }
 
         return 'superban:email:' . $user->email;

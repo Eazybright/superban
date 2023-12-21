@@ -2,24 +2,22 @@
 
 namespace Eazybright\SuperBan;
 
-use Spatie\LaravelPackageTools\Package;
-use Spatie\LaravelPackageTools\PackageServiceProvider;
+use Illuminate\Support\ServiceProvider;
 // use Eazybright\SuperBan\Superban\Commands\SuperbanCommand;
 
-class SuperBanServiceProvider extends PackageServiceProvider
+class SuperBanServiceProvider extends ServiceProvider
 {
-    public function configurePackage(Package $package): void
+    public function register(): void
     {
-        /*
-         * This class is a Package Service Provider
-         *
-         * More info: https://github.com/spatie/laravel-package-tools
-         */
-        $package
-            ->name('superban')
-            ->hasConfigFile();
-            // ->hasViews()
-            // ->hasMigration('create_superban_table');
-            // ->hasCommand(SuperbanCommand::class);
+        $this->mergeConfigFrom(
+            __DIR__.'/../config/superban.php', 'superban'
+        );
+    }
+
+    public function boot(): void
+    {
+        $this->publishes([
+            __DIR__.'/../config/superban.php' => config_path('superban.php'),
+        ]);
     }
 }

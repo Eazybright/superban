@@ -2,15 +2,24 @@
 
 namespace Eazybright\SuperBan\Tests;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
+use Eazybright\SuperBan\Http\Middleware\SuperBanMiddleware;
+use Eazybright\SuperBan\SuperBan;
 use Orchestra\Testbench\TestCase as Orchestra;
 use Eazybright\SuperBan\SuperBanServiceProvider;
 
 class TestCase extends Orchestra
 {
+
+    protected $superBan;
+
+    protected $superBanMiddleware;
+
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->superBan = app(Superban::class);
+        $this->superBanMiddleware = new SuperBanMiddleware($this->superBan);
     }
 
     protected function getPackageProviders($app)
@@ -23,10 +32,5 @@ class TestCase extends Orchestra
     public function getEnvironmentSetUp($app)
     {
         config()->set('database.default', 'testing');
-
-        /*
-        $migration = include __DIR__.'/../database/migrations/create_skeleton_table.php.stub';
-        $migration->up();
-        */
     }
 }
