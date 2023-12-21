@@ -28,9 +28,4 @@ class TestCase extends Orchestra
             SuperBanServiceProvider::class,
         ];
     }
-
-    public function getEnvironmentSetUp($app)
-    {
-        config()->set('database.default', 'testing');
-    }
 }
