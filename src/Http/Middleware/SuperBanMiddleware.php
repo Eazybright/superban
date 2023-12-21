@@ -4,8 +4,8 @@ namespace Eazybright\SuperBan\Http\Middleware;
 
 use Closure;
 use Eazybright\SuperBan\SuperBan;
-use Illuminate\Http\Response;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class SuperBanMiddleware
 {
@@ -17,13 +17,9 @@ class SuperBanMiddleware
     }
 
     /**
-     * @param Request $request
-     * @param Closure $next
-     * @param int $attempts
-     * @param int $minutes
-     * @param int $duration
+     * @param  Request  $request
      */
-    public function handle($request, Closure $next, int $attempts = null, int $minutes = null, int $duration = null)
+    public function handle($request, Closure $next, ?int $attempts = null, ?int $minutes = null, ?int $duration = null)
     {
         $key = $this->superBan->getKey($request);
         $maxAttempts = $attempts ?? config('superban.max_attempts');
@@ -46,6 +42,7 @@ class SuperBanMiddleware
 
         // Continue with the request
         $response = $next($request);
+
         return $this->buildResponseHeader($response, $maxAttempts, $key);
     }
 
@@ -72,11 +69,11 @@ class SuperBanMiddleware
         return $this->buildResponseHeader($response, $maxAttempts, $banKey, $retryAfter);
     }
 
-    protected function buildResponseHeader(Response $response, int $maxAttempts, string $key, int $retryAfter = null)
+    protected function buildResponseHeader(Response $response, int $maxAttempts, string $key, ?int $retryAfter = null)
     {
         $headers = [
             'X-SuperBan-Limit' => $maxAttempts,
-            'X-SuperBan-Remaining' => $this->superBan->remainingAttempts($key, $maxAttempts),  
+            'X-SuperBan-Remaining' => $this->superBan->remainingAttempts($key, $maxAttempts),
         ];
 
         if (! is_null($retryAfter)) {
@@ -84,6 +81,7 @@ class SuperBanMiddleware
         }
 
         $response->headers->add($headers);
+
         return $response;
     }
 }

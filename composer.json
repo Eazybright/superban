@@ -52,10 +52,7 @@
         "laravel": {
             "providers": [
                 "Eazybright\\SuperBan\\SuperBanServiceProvider"
-            ],
-            "aliases": {
-                "SuperBan": "Eazybright\\SuperBan\\Facades\\SuperBan"
-            }
+            ]
         }
     },
     "minimum-stability": "dev",

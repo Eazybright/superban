@@ -4,12 +4,11 @@ namespace Eazybright\SuperBan\Tests;
 
 use Eazybright\SuperBan\Http\Middleware\SuperBanMiddleware;
 use Eazybright\SuperBan\SuperBan;
-use Orchestra\Testbench\TestCase as Orchestra;
 use Eazybright\SuperBan\SuperBanServiceProvider;
+use Orchestra\Testbench\TestCase as Orchestra;
 
 class TestCase extends Orchestra
 {
-
     protected $superBan;
 
     protected $superBanMiddleware;
@@ -18,7 +17,7 @@ class TestCase extends Orchestra
     {
         parent::setUp();
 
-        $this->superBan = app(Superban::class);
+        $this->superBan = app(SuperBan::class);
         $this->superBanMiddleware = new SuperBanMiddleware($this->superBan);
     }
 

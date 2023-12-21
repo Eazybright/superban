@@ -10,7 +10,7 @@ return [
     | This is the default number of requests allowed per minute
     |
     */
-    'max_attempts' => 60, 
+    'max_attempts' => 60,
 
     /*
     |--------------------------------------------------------------------------
@@ -20,14 +20,14 @@ return [
     | Specify how your application ban user requests, either by 'ip', 'user_id', or 'email'
     |
     */
-    'rate_limit_by' => 'ip', 
+    'rate_limit_by' => 'ip',
 
     /*
     |--------------------------------------------------------------------------
     | Decay Rate
     |--------------------------------------------------------------------------
     |
-    | This is the default minutes for the number of requests can occur. 
+    | This is the default minutes for the number of requests can occur.
     | The available attempts are reset after the time elapses.
     | For example, 60 requests can occur within 1 minute.
     |
@@ -42,5 +42,5 @@ return [
     | This is the default minutes for which the user is banned for.
     |
     */
-    'ban_duration' => 1
+    'ban_duration' => 1,
 ];

@@ -3,7 +3,6 @@
 namespace Eazybright\SuperBan;
 
 use Illuminate\Support\ServiceProvider;
-// use Eazybright\SuperBan\Superban\Commands\SuperbanCommand;
 
 class SuperBanServiceProvider extends ServiceProvider
 {
