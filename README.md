@@ -1,68 +1,107 @@
-# :package_description
+# SUPERBAN
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/:vendor_slug/:package_slug.svg?style=flat-square)](https://packagist.org/packages/:vendor_slug/:package_slug)
-[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/:vendor_slug/:package_slug/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/:vendor_slug/:package_slug/actions?query=workflow%3Arun-tests+branch%3Amain)
-[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/:vendor_slug/:package_slug/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/:vendor_slug/:package_slug/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
-[![Total Downloads](https://img.shields.io/packagist/dt/:vendor_slug/:package_slug.svg?style=flat-square)](https://packagist.org/packages/:vendor_slug/:package_slug)
-<!--delete-->
----
-This repo can be used to scaffold a Laravel package. Follow these steps to get started:
-
-1. Press the "Use this template" button at the top of this repo to create a new repo with the contents of this skeleton.
-2. Run "php ./configure.php" to run a script that will replace all placeholders throughout all the files.
-3. Have fun creating your package.
-4. If you need help creating a package, consider picking up our <a href="https://laravelpackage.training">Laravel Package Training</a> video course.
----
-<!--/delete-->
-This is where your description should go. Limit it to a paragraph or two. Consider adding a small example.
-
-## Support us
-
-[<img src="https://github-ads.s3.eu-central-1.amazonaws.com/:package_name.jpg?t=1" width="419px" />](https://spatie.be/github-ad-click/:package_name)
-
-We invest a lot of resources into creating [best in class open source packages](https://spatie.be/open-source). You can support us by [buying one of our paid products](https://spatie.be/open-source/support-us).
-
-We highly appreciate you sending us a postcard from your hometown, mentioning which of our package(s) you are using. You'll find our address on [our contact page](https://spatie.be/about-us). We publish all received postcards on [our virtual postcard wall](https://spatie.be/open-source/postcards).
+This package adds the ability to ban a client completely for a period of time in a laravel application. This is achieved by utilizing Laravel’s built-in rate-limiting features. The user can be banned using their Ip address, UserId, and Email address.
 
 ## Installation
 
-You can install the package via composer:
+Open the `composer.json` file in your laravel application and include the following array somewhere in the object:
 
 ```bash
-composer require :vendor_slug/:package_slug
+...
+
+"repositories": [
+    {
+        "type": "vcs",
+        "url": "https://github.com/eazybright/superban"
+    }
+]
+
+...
 ```
 
-You can publish and run the migrations with:
+Run the command below to install this package via composer:
 
 ```bash
-php artisan vendor:publish --tag=":package_slug-migrations"
-php artisan migrate
+composer require eazybright/superban
 ```
 
 You can publish the config file with:
 
 ```bash
-php artisan vendor:publish --tag=":package_slug-config"
+php artisan vendor:publish --provider="Eazybright\SuperBan\SuperBanServiceProvider" --tag="config"
 ```
+The config file will be exported into the `/config` directory with the name `superban.php`. This file contains an array of default configuration values.
 
-This is the contents of the published config file:
+Let's register the middleware into our application. There are many ways to achieve this in the `app/Http/Kernel.php` file:
+
+1. You can update the `$middlewareAliases` array to use the middleware for specific routes.
 
 ```php
-return [
+protected $middlewareAliases = [
+    'auth' => \App\Http\Middleware\Authenticate::class,
+    ...
+    'superban' => \Eazybright\SuperBan\Http\Middleware\SuperBanMiddleware::class,
+    ...
 ];
 ```
+With this in place, you can use this middleware in your routes as:
+```php
+Route::middleware(['superban:100,5,10'])->group(function () {
+    ...
+});
+```
+The middleware parameter can be explained in the table below:
+| Options       | Detail                                                             | Example   |  Data Type |
+| ------------- | -------------------------------------------------------------------| --------------- |  --------- |
+| max_attempts   | Specifies the number of requests allowed                          | 100               |   Integer  |
+| decay_rate | Amount of minutes for the period of time the number of requests can happen    | 2               |   Integer  |
+| ban_duration   | Amount minutes for which the user will be banned for    | 10              |   Integer  |
 
-Optionally, you can publish the views using
+2. Or update the `$middlewareGroups` array, you can either place it in the `web` or `api` object depending on your usage.
+```php
+protected $middlewareGroups = [
+    'web' => [
+        ...
+        \Eazybright\SuperBan\Http\Middleware\SuperBanMiddleware::class
+    ],
 
-```bash
-php artisan vendor:publish --tag=":package_slug-views"
+    'api' => [
+        ...
+        \Eazybright\SuperBan\Http\Middleware\SuperBanMiddleware::class
+    ],
+];
+```
+If you are using this approach, the middleware parameter can be configured in `config\superban.php` file.
+
+## Cache Configuration
+Your default application cache is being used by the rate limiter as defined by the `default` key within your application's `cache` configuration file. You can configure different cache drivers such as redis, database, memcached, etc. You can learn more on how to configure your cache driver here - [https://laravel.com/docs/10.x/cache](https://laravel.com/docs/10.x/cache).
+To use a different cache driver, you may specify which cache driver the rate limiter should use by defining a `limiter` key within your application's `cache` configuration file:
+```php
+// config/cache.php
+
+'default' => env('CACHE_DRIVER', 'file'),
+
+...
+
+'limiter' => 'redis', // add this line to use a seperate cache driver with the rate limiter
 ```
 
+## Ban Parameter
+This package has the ability to ban request by user id, IP address and email. You can update the `rate_limit_by` key in the `superban.php` file to specify how you want to ban user. Available options are `ip`, `user_id`, `email`.
+
 ## Usage
+In order to ban user for 24 hours if there are over 200 requests to a particular route within a space of 2 minutes, you can do the following:
 
 ```php
-$variable = new VendorName\Skeleton();
-echo $variable->echoPhrase('Hello, VendorName!');
+Route::middleware(['superban:200,2,1440'])->group(function () {
+    Route::post('/thisroute', function () {
+       // ...
+   });
+ 
+   Route::post('anotherroute', function () {
+       // ...
+   });
+});
 ```
 
 ## Testing
@@ -70,23 +109,6 @@ echo $variable->echoPhrase('Hello, VendorName!');
 ```bash
 composer test
 ```
-
-## Changelog
-
-Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.
-
-## Contributing
-
-Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
-
-## Security Vulnerabilities
-
-Please review [our security policy](../../security/policy) on how to report security vulnerabilities.
-
-## Credits
-
-- [:author_name](https://github.com/:author_username)
-- [All Contributors](../../contributors)
 
 ## License
 
