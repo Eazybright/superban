@@ -17,6 +17,6 @@ class SuperBanServiceProvider extends ServiceProvider
     {
         $this->publishes([
             __DIR__.'/../config/superban.php' => config_path('superban.php'),
-        ]);
+        ], 'config');
     }
 }
